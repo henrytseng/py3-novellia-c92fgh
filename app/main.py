@@ -146,6 +146,7 @@ async def import_resources(request: Request):
 
     # Each JSONL line
     total_lines_processed = 0
+    validation_errors = []
     records = []
     i = -1
     for line in request_body.split("\n"):
@@ -172,30 +173,34 @@ async def import_resources(request: Request):
                     component_record["component"] = [component]
 
                     # Record
-                    record, validation_errors = await _save_record(
+                    record, recent_validation_errors = await _save_record(
                         request, component_record, i
                     )
+                    validation_errors.extend(recent_validation_errors)
                     records.append(record)
                     log_imported_records.append(
                         {
                             "raw_body": json.dumps(component_record),
                             "record_id": record.id
-                            if len(validation_errors) == 0
+                            if len(recent_validation_errors) == 0
                             else None,
-                            "validation_errors": validation_errors,
+                            "validation_errors": recent_validation_errors,
                         }
                     )
 
             # Transform
             else:
                 # Record
-                record, validation_errors = await _save_record(request, data, i)
+                record, recent_validation_errors = await _save_record(request, data, i)
+                validation_errors.extend(recent_validation_errors)
                 records.append(record)
                 log_imported_records.append(
                     {
                         "raw_body": json.dumps(data),
-                        "record_id": record.id if len(validation_errors) == 0 else None,
-                        "validation_errors": validation_errors,
+                        "record_id": record.id
+                        if len(recent_validation_errors) == 0
+                        else None,
+                        "validation_errors": recent_validation_errors,
                     }
                 )
 
