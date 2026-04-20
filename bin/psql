@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+SERVICE="db"
+ARGS="$@"
+
+if [ -z "$ARGS" ]; then
+    docker compose exec $SERVICE psql -U acme acme
+else
+    docker compose exec $SERVICE psql -U acme postgres -c "$@"
+fi

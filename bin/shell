@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+SERVICE="backend"
+
+if [ $# -eq 0 ]; then
+    docker compose exec "$SERVICE" /bin/bash
+else
+    docker compose exec "$SERVICE" /bin/bash -c "$@"
+fi

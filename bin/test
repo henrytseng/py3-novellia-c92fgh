@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+# Stop service
+echo ".Stopping service"
+docker compose kill backend
+
+# Create test database from scratch
+echo ".Setting up database"
+bin/psql "DROP DATABASE IF EXISTS acme_test;"
+bin/psql "CREATE DATABASE acme_test WITH TEMPLATE acme OWNER acme;"
+
+echo ".Running tests"
+docker compose up -d backend
+docker compose exec backend uv run pytest "$@"
