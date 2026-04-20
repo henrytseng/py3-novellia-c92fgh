@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator, Dict
 
 from fastapi import FastAPI, Request
-from sqlalchemy import select, func
+from sqlalchemy import select, func, cast, Date
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
@@ -319,7 +319,9 @@ async def get_analytics(request: Request):
         func.sum(func.jsonb_array_length(ImportedResource.validation_errors)).label(
             "num_validation_errors"
         ),
-        func.count(func.distict(ImportedResource.created_at)).label("num_imports"),
+        func.count(func.distinct(cast(ImportedResource.created_at, Date))).label(
+            "num_imports"
+        ),
     )
 
     imported_results = await session.execute(count_query)
